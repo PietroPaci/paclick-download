@@ -1,6 +1,6 @@
 {
- "version": "0.8.9",
- "notes": "(versione di prova della 0.9: prima parte)\nCornici nuove\n• nera: come l'istantanea, su carta nera con la scritta bianca\n• pellicola: la foto dentro una striscia di negativo, con le scritte in piccolo fra le perforazioni e l'immagine\n• impresse: senza cornice, con le scritte sulla foto; nero o bianco lo sceglie Paclick guardando la foto\n• con i dati di scatto accesi, in fondo c'è anche il filtro usato\n\nE poi\n• Paclick nel menu «Condividi»: dalla galleria (o da Snapseed) si mandano le foto direttamente a «importa»\n• avviso quando c'è una versione nuova da scaricare\n• nei dati della foto i nomi con l'accento non diventano più «?» ed è segnato se il flash è scattato\n• registro degli errori nella pagina Informazioni, da inviare se qualcosa non va\n• foto da circa 12 megapixel anche sui telefoni che ne fanno 50 o più",
- "apk": "https://raw.githubusercontent.com/PietroPaci/paclick-download/main/apk/Paclick-0.8.9.apk",
+ "version": "0.8.9.1",
+ "notes": "• corretta l'importazione: con alcune foto (già nel formato scelto) non si salvava niente\n• le stampe importate ora compaiono in cima alla galleria, con la data dell'importazione; la data della foto originale resta sulla cornice",
+ "apk": "https://raw.githubusercontent.com/PietroPaci/paclick-download/main/apk/Paclick-0.8.9.1.apk",
  "page": "https://github.com/PietroPaci/paclick-download"
 }
