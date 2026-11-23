@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paclick</title>
+<meta name="description" content="Paclick è l'app Android che scatta, applica un filtro e incornicia la foto con luogo e data. Scegli il filtro, inquadra, click.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Caveat:wght@500;700&family=Courier+Prime:wght@400;700&family=Figtree:wght@400;500;700&family=Jost:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Idea: la pagina è un banco di prova. Un telefono con l'interfaccia di Paclick scatta e sputa stampe;
+   lo sfondo prende il colore del filtro in uso. Bachelite per i comandi, carta crema per le stampe, rosso solo per lo scatto. */
+:root{
+  color-scheme: light;
+  --bg:#E9C46A;            /* colore del filtro in uso (cambia da script) */
+  --ink:#241A15;           /* testo sopra --bg (cambia da script) */
+  --paper:#FBF6EA;
+  --paper-ink:#241A15;
+  --bakelite:#241A15;
+  --glow:#F4D98B;
+  --shutter:#E0452B;
+  --chrome:linear-gradient(135deg,#f4f2ec,#9d9a93 38%,#e9e6df 55%,#7d7a74 80%,#d8d5ce);
+  --display:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --hand:"Caveat","Bradley Hand",cursive;
+  --type:"Courier Prime","Courier New",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;overflow-x:hidden;
+  transition:background-color .6s ease,color .6s ease;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);font-weight:800;line-height:.98;margin:0;text-wrap:balance;letter-spacing:-.02em}
+p{margin:0}
+button{font:inherit;color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.eyebrow{font-family:var(--type);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+:focus-visible{outline:3px solid var(--shutter);outline-offset:3px}
+
+/* ---------- apertura ---------- */
+.hero{padding:26px 0 30px;overflow:hidden}
+.hero .wrap{display:grid;gap:10px;align-items:center}
+.hero-text{display:flex;flex-direction:column;gap:16px;align-items:flex-start;position:relative;z-index:5}
+h1{font-size:clamp(78px,20vw,176px);letter-spacing:-.05em}
+h1 i{font-style:normal;display:inline-block;transform:rotate(-6deg) translateY(-.04em);color:var(--shutter);animation:stamp .7s .25s cubic-bezier(.2,1.6,.4,1) backwards}
+@keyframes stamp{from{transform:rotate(14deg) scale(1.9);opacity:0}}
+.tagline{font-family:var(--display);font-weight:600;font-size:clamp(24px,5.4vw,36px);line-height:1.1}
+.lead{max-width:33em}
+.cta-row{display:flex;flex-wrap:wrap;gap:16px 22px;align-items:center;margin-top:6px}
+.btn{display:inline-flex;align-items:center;gap:12px;background:var(--bakelite);color:var(--paper);text-decoration:none;
+  font-family:var(--display);font-weight:800;font-size:20px;padding:12px 24px 12px 12px;border-radius:999px;
+  border:2px solid rgba(251,246,234,.35);box-shadow:0 6px 0 rgba(0,0,0,.28);transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translateY(-2px) rotate(-1deg);box-shadow:0 8px 0 rgba(0,0,0,.28)}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.28)}
+.btn .dot{width:38px;height:38px;border-radius:50%;background:var(--shutter);border:3px solid var(--paper);flex:none;animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(224,69,43,.6)}60%{box-shadow:0 0 0 12px rgba(224,69,43,0)}}
+.btn small{display:block;font-family:var(--type);font-weight:400;font-size:12px;letter-spacing:.04em;opacity:.8}
+.count{display:flex;align-items:center;gap:8px;font-family:var(--type);font-size:14px}
+.odo{display:inline-flex;gap:3px}
+.odo b{background:var(--bakelite);color:var(--glow);font-size:19px;line-height:1;padding:6px 6px 4px;border-radius:4px;
+  font-variant-numeric:tabular-nums;box-shadow:inset 0 2px 3px rgba(0,0,0,.6)}
+.count[hidden]{display:none}
+
+/* ---------- il telefono ---------- */
+.stage{position:relative;padding:96px 0 34px;display:flex;flex-direction:column;align-items:center;min-height:700px}
+.floaty{position:relative;z-index:2;animation:float 5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(2.5deg)}50%{transform:translateY(-9px) rotate(1.2deg)}}
+.phone{width:clamp(252px,72vw,292px);background:#0d0b0a;border-radius:40px;padding:9px;border:2px solid #8f8c86;
+  box-shadow:0 30px 60px rgba(0,0,0,.38),inset 0 0 0 2px #2b2724}
+.screen{position:relative;border-radius:31px;overflow:hidden;background:#EDE3CC;color:#2a1d17;padding:8px 10px 16px;
+  display:flex;flex-direction:column;gap:9px;font-family:"Jost",var(--body)}
+.sb{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:10.5px;padding:0 8px;opacity:.8}
+.sb .cam{width:9px;height:9px;border-radius:50%;background:#0d0b0a}
+.top{display:flex;justify-content:space-between;align-items:center;padding:0 4px}
+.top svg,.gal svg,.vf-in svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.mode{display:flex;font-weight:600;font-size:9px;letter-spacing:.09em;background:#D8CAA6;border-radius:99px;padding:2.5px;box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+.mode b,.mode span{padding:4px 9px;border-radius:99px}
+.mode b{background:#9C2A1F;color:#F6EEDC;font-weight:600}
+.ico{display:flex;gap:10px;align-items:center}
+.vf{padding:4px;border-radius:15px;background:var(--chrome);box-shadow:0 3px 8px rgba(0,0,0,.35)}
+.vf-in{position:relative;aspect-ratio:4/5;border-radius:11px;overflow:hidden;background-color:#1a1310;background-size:cover;background-position:center;
+  border:3px solid #1a1310;box-shadow:inset 0 0 26px rgba(0,0,0,.35);color:#F6EEDC}
+.vf-in .chip{position:absolute;top:7px;width:26px;height:26px;border-radius:50%;background:rgba(26,19,16,.72);display:grid;place-items:center}
+.vf-in .chip svg{width:13px;height:13px}
+.vf-in .chip.l{left:7px}.vf-in .chip.r{right:7px}
+.vf-in .focal{position:absolute;left:7px;bottom:7px;display:flex;gap:9px;align-items:center;background:rgba(26,19,16,.72);border-radius:99px;
+  padding:3px 9px 3px 3px;font-weight:600;font-size:9.5px}
+.vf-in .focal b{background:#4a3524;color:#FFC56B;border-radius:99px;padding:2px 7px}
+.vf-in .focal small{font-size:8px;opacity:.7}
+.vf-in .dark{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
+.vf-in .dark.on{animation:blink .32s}
+@keyframes blink{0%,45%{opacity:1}100%{opacity:0}}
+.scale{position:relative;height:60px;border-radius:9px;background:#2A1C15;overflow:hidden;
+  box-shadow:0 0 0 1.5px #cfc9bd,0 2px 5px rgba(0,0,0,.35),inset 0 2px 8px rgba(0,0,0,.7)}
+.scale .lamp{position:absolute;top:-30px;width:120px;height:120px;margin-left:-60px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,190,100,.55),rgba(255,170,80,.18) 45%,transparent 68%);transition:left .5s cubic-bezier(.3,1.5,.5,1)}
+.scale button{position:absolute;top:1px;transform:translateX(-50%);background:none;border:0;cursor:pointer;white-space:nowrap;
+  font-family:"Jost",var(--body);font-weight:600;font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;color:#B8A587;padding:6px 3px;z-index:2;transition:color .3s}
+.scale button.low{top:16px}
+.scale button[aria-checked="true"]{color:#FFE2A6;text-shadow:0 0 8px rgba(255,190,100,.9)}
+.scale .ruler{position:absolute;left:14px;right:14px;bottom:6px;height:6px;opacity:.55;
+  background:repeating-linear-gradient(90deg,#B8A587 0 1px,transparent 1px 6px)}
+.scale .tick{position:absolute;bottom:6px;width:1.5px;margin-left:-.75px;background:#D9C7A4;height:13px}
+.scale .tick.low{height:9px}
+.scale .end{position:absolute;bottom:3px;font-size:9px;color:#B8A587;line-height:1}
+.needle{position:absolute;top:36px;bottom:3px;width:2px;margin-left:-1px;background:#E0452B;z-index:3;border-radius:2px;
+  box-shadow:0 0 6px rgba(224,69,43,.9);transition:left .5s cubic-bezier(.3,1.5,.5,1);pointer-events:none}
+.needle::before{content:"";position:absolute;left:-2px;top:-3px;width:6px;height:6px;border-radius:50%;background:#E0452B}
+.plate{background:#2A1C15;color:#F0E4CC;border-radius:8px;padding:6px 10px;font-size:10px;font-weight:500;letter-spacing:.03em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 0 0 1.5px #cfc9bd}
+.plate b{font-weight:700;color:#FFD98A;letter-spacing:.06em;text-transform:uppercase}
+.bottom{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:4px 6px 0}
+.shutter{grid-column:2;width:60px;height:60px;border-radius:50%;border:0;padding:6px;background:var(--chrome);cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,.3);transition:transform .1s,box-shadow .1s}
+.shutter::before{content:"";display:block;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c9473a,#96241b 70%);box-shadow:inset 0 -3px 6px rgba(0,0,0,.3)}
+.shutter:active,.shutter.down{transform:translateY(3px) scale(.94);box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.gal{justify-self:end;display:flex;flex-direction:column;align-items:center;gap:1px;font-weight:500;font-size:9.5px}
+.screen>.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:6}
+.screen>.flash.on{animation:fl .5s ease-out}
+@keyframes fl{0%{opacity:.9}100%{opacity:0}}
+.hint{position:relative;z-index:4;font-family:var(--hand);font-size:25px;line-height:1.05;margin-top:22px;transform:rotate(-3deg);text-align:center}
+
+/* stampe che escono dal telefono */
+.print{position:absolute;left:50%;top:96px;width:var(--pw,112px);background:var(--paper);padding:7px 7px 0;z-index:1;pointer-events:none;
+  box-shadow:0 10px 22px rgba(0,0,0,.3);will-change:transform}
+.print .ph{aspect-ratio:4/5;background-size:cover;background-position:center;box-shadow:inset 0 0 18px rgba(0,0,0,.3);transition:filter 2.8s ease-out}
+.print.raw .ph{filter:brightness(1.75) contrast(.45) saturate(.05) sepia(.3)}
+.print p{font-family:var(--hand);color:#3a2d26;font-size:14px;line-height:1;padding:6px 1px 8px;white-space:nowrap}
+.print p span{display:block;font-size:11.5px;opacity:.8;margin-top:1px}
+
+/* ---------- nastro dei filtri ---------- */
+.tape{background:var(--bakelite);color:var(--glow);overflow:hidden;transform:rotate(-1.6deg) scale(1.03);padding:12px 0;position:relative;z-index:6;
+  box-shadow:0 8px 0 rgba(0,0,0,.2)}
+.tape div{display:flex;width:max-content;animation:run 26s linear infinite;font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,40px);white-space:nowrap}
+.tape span{padding-right:.5em}
+.tape span::after{content:"✳";padding-left:.5em;color:var(--shutter)}
+@keyframes run{to{transform:translateX(-50%)}}
+
+/* ---------- sezioni su carta ---------- */
+.sheet{background:var(--paper);color:var(--paper-ink);padding:84px 0 70px;margin-top:-18px}
+.sheet h2,.dark h2{font-size:clamp(36px,7.5vw,64px)}
+.sub{max-width:36em;margin-top:14px}
+.two{display:grid;gap:22px;margin-top:36px}
+.who{border:2px solid var(--paper-ink);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:12px;background:#fff;
+  box-shadow:7px 7px 0 var(--paper-ink);transform:rotate(-1.2deg);transition:transform .3s cubic-bezier(.3,1.5,.5,1)}
+.who:nth-child(2){background:var(--paper-ink);color:var(--paper);transform:rotate(1.4deg);box-shadow:7px 7px 0 var(--shutter)}
+.who:hover{transform:rotate(0) translateY(-4px)}
+.who h3{font-size:28px;line-height:1.05}
+.who .eyebrow{opacity:.7}
+.who ul{margin:4px 0 0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px}
+.frames-title{margin-top:64px;font-size:clamp(28px,5.5vw,42px)}
+.frames{display:grid;grid-template-columns:repeat(3,1fr);gap:26px 14px;margin-top:26px;align-items:start;max-width:760px}
+.frames figure{margin:0;display:flex;flex-direction:column;gap:10px;transition:transform .3s cubic-bezier(.3,1.5,.5,1)}
+.frames figure:nth-child(1){transform:rotate(-3deg)}.frames figure:nth-child(2){transform:rotate(2deg) translateY(10px)}.frames figure:nth-child(3){transform:rotate(-1.5deg)}.frames figure:nth-child(4){transform:rotate(1.5deg)}.frames figure:nth-child(5){transform:rotate(-2deg) translateY(8px)}.frames figure:nth-child(6){transform:rotate(2.5deg)}
+.frames figure:hover{transform:rotate(0) scale(1.05)}
+.mini{background:var(--paper);box-shadow:0 8px 20px rgba(0,0,0,.25);padding:7% 7% 0}
+.mini .ph{position:relative;aspect-ratio:4/5;background-size:cover;background-position:center;box-shadow:inset 0 0 18px rgba(0,0,0,.28)}
+.mini p{font-family:var(--hand);font-size:clamp(11px,2.7vw,19px);line-height:1;padding:8% 2% 10%;color:#3a2d26}
+.mini.simple{background:#fff}
+.mini.simple p{font-family:var(--type);font-size:clamp(7px,1.6vw,11px);padding:9% 2% 12%}
+.mini.none{padding:0}
+.mini.black{background:#11100f;outline:1px solid rgba(240,237,230,.6);outline-offset:-3px}
+.mini.black p{font-family:var(--type);font-size:clamp(7px,1.6vw,11px);padding:9% 2% 12%;color:#f0ede6}
+.mini.strip{background:#1c1714;padding:14% 4% 0;position:relative}
+.mini.strip::before,.mini.strip::after{content:"";position:absolute;left:0;right:0;height:5%;
+  background:repeating-linear-gradient(90deg,transparent 0 5%,#e8dcc4 5% 10%,transparent 10% 12.5%)}
+.mini.strip::before{top:4%}
+.mini.strip::after{bottom:4%}
+.mini.strip p{font-family:var(--type);font-size:clamp(6px,1.4vw,10px);padding:6% 2% 16%;color:#e8a33a;letter-spacing:.06em}
+.mini.imprint{padding:0}
+.mini.imprint .ph::after{content:"Casaleone · 14 Nov 2026";position:absolute;left:6%;bottom:5%;font-family:var(--type);
+  font-size:clamp(6px,1.5vw,10.5px);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.mini.none .ph::after{content:"14 11 '26";position:absolute;right:7%;bottom:6%;font-family:var(--type);font-weight:700;
+  font-size:clamp(9px,2.2vw,15px);color:#ff9a2e;text-shadow:0 0 6px rgba(255,120,0,.9)}
+.frames figcaption{font-size:14.5px;line-height:1.35}
+.frames figcaption b{font-family:var(--display);font-size:18px;display:block}
+.facts{display:grid;gap:22px 30px;margin-top:48px}
+.facts h3{font-size:22px;margin-bottom:6px}
+.facts p{font-size:16px}
+
+/* ---------- rullino ---------- */
+.dark{background:var(--bakelite);color:var(--paper);padding:0 0 70px;overflow:hidden}
+.film{background:#0b0807;padding:22px 0;position:relative;transform:rotate(1.4deg) scale(1.03);margin:-10px 0 56px}
+.film::before,.film::after{content:"";position:absolute;left:0;right:0;height:10px;background:repeating-linear-gradient(90deg,var(--paper) 0 12px,transparent 12px 26px);opacity:.85}
+.film::before{top:6px}.film::after{bottom:6px}
+.film div{display:flex;gap:10px;width:max-content;animation:run 34s linear infinite reverse}
+.film i{display:block;width:150px;aspect-ratio:3/2;background-size:cover;background-position:center;border-radius:3px;
+  filter:grayscale(.85) brightness(.8) contrast(1.05);transition:filter .5s}
+.film i:hover{filter:none}
+.dark h2 span{color:var(--glow)}
+.three{display:grid;gap:18px;margin-top:36px}
+.three div{border-top:2px solid var(--glow);padding-top:14px}
+.three h3{font-size:30px;color:var(--glow);margin-bottom:6px}
+.fridge{margin-top:40px;display:flex;flex-wrap:wrap;gap:18px 26px;align-items:center}
+.cans{display:flex;gap:10px;align-items:flex-end;background:rgba(251,246,234,.08);border:2px solid rgba(251,246,234,.35);border-radius:14px;padding:14px 16px 12px}
+.can{width:34px;height:54px;border-radius:5px;position:relative;background:linear-gradient(90deg,#3b3531,#77706a 45%,#2d2826);animation:wig 3s ease-in-out infinite}
+.can::before{content:"";position:absolute;left:8px;right:8px;top:-7px;height:8px;border-radius:3px 3px 0 0;background:#8f8881}
+.can::after{content:"";position:absolute;left:0;right:0;top:14px;height:24px;background:var(--c)}
+.can:nth-child(2){animation-delay:.4s}.can:nth-child(3){animation-delay:.8s}
+.can.empty{background:none;border:2px dashed rgba(251,246,234,.45);animation:none}
+.can.empty::before,.can.empty::after{display:none}
+@keyframes wig{0%,86%,100%{transform:rotate(0)}90%{transform:rotate(-7deg)}95%{transform:rotate(6deg)}}
+.fridge p{font-family:var(--hand);font-size:27px;line-height:1.12;max-width:17em;transform:rotate(-1deg)}
+
+/* ---------- scarica ---------- */
+.get{padding:72px 0 40px}
+.get h2{font-size:clamp(40px,9vw,84px)}
+.steps{list-style:none;counter-reset:s;padding:0;margin:34px 0 0;display:grid;gap:16px}
+.steps li{counter-increment:s;background:var(--paper);color:var(--paper-ink);border-radius:16px;padding:18px 20px 18px 64px;position:relative;box-shadow:5px 5px 0 rgba(0,0,0,.25)}
+.steps li::before{content:counter(s);position:absolute;left:18px;top:16px;width:32px;height:32px;border-radius:50%;
+  background:var(--paper-ink);color:var(--glow);font-family:var(--type);font-weight:700;display:grid;place-items:center}
+.steps b{font-family:var(--display);font-size:19px;display:block}
+.get .cta-row{margin-top:30px}
+.note{font-family:var(--type);font-size:13.5px;margin-top:22px;max-width:40em}
+footer{padding:26px 0 44px;font-family:var(--type);font-size:13px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;border-top:2px solid currentColor;padding-top:16px}
+
+/* entrata allo scorrimento: lo stato di riposo resta leggibile */
+.js-rv .rv{opacity:.55;translate:0 30px;transition:opacity .7s,translate .7s cubic-bezier(.2,1.2,.4,1)}
+.js-rv .rv.in{opacity:1;translate:0 0}
+
+@media (min-width:860px){
+  .hero{padding:30px 0 40px}
+  .hero .wrap{grid-template-columns:1fr 1fr;gap:20px}
+  .stage{--pw:138px;min-height:760px}
+  .phone{width:300px}
+  .print p{font-size:16.5px}.print p span{font-size:13px}
+  .two{grid-template-columns:1fr 1fr}
+  .facts{grid-template-columns:repeat(2,1fr)}
+  .three{grid-template-columns:repeat(3,1fr)}
+  .steps{grid-template-columns:repeat(3,1fr)}
+  .film i{width:200px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+  html{scroll-behavior:auto}
+  .floaty{transform:rotate(2deg)}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-text">
+      <p class="eyebrow">App per Android · versione 1.0</p>
+      <h1>Pa<i>click</i></h1>
+      <p class="tagline">Scegli il filtro. Inquadra. Click.</p>
+      <p class="lead">La foto esce già incorniciata, con il luogo e la data scritti a mano sul bordo. Non c'è niente da regolare prima e niente da ritoccare dopo.</p>
+      <div class="cta-row">
+        <a class="btn js-dl" href="https://github.com/PietroPaci/paclick-download/releases/latest">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Scarica Paclick<small class="js-ver">APK per Android</small></span>
+        </a>
+        <p class="count js-count" hidden>già scaricata <span class="odo js-odo" aria-hidden="true"></span><span class="js-odo-sr" style="position:absolute;left:-9999px"></span> volte</p>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="floaty">
+        <div class="phone">
+          <div class="screen">
+            <div class="sb" aria-hidden="true"><span>12:08</span><span class="cam"></span><span>5G ▮</span></div>
+            <div class="top" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+              <div class="mode"><b>FOTO</b><span>ANALOGICO</span></div>
+              <div class="ico">
+                <svg viewBox="0 0 24 24"><path d="M13 2 5 14h6l-1 8 8-12h-6zM4 3l16 18"/></svg>
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4M9 2h6"/></svg>
+              </div>
+            </div>
+            <div class="vf"><div class="vf-in" id="vf" role="img" aria-label="Mirino con il filtro scelto">
+              <span class="chip l" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 9.3h16M4 14.7h16M9.3 4v16M14.7 4v16"/></svg></span>
+              <span class="chip r" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3"/></svg></span>
+              <span class="focal" aria-hidden="true"><b>28</b><span>35</span><span>50</span><small>mm</small></span>
+              <i class="dark" id="dark"></i></div></div>
+            <div class="scale" role="radiogroup" aria-label="Scala dei filtri" id="scale"><i class="lamp" id="lamp"></i><i class="ruler"></i><span class="end" style="left:4px">☼</span><span class="end" style="right:4px">☾</span><span class="needle" id="needle"></span></div>
+            <p class="plate" id="tag" aria-live="polite"></p>
+            <div class="bottom">
+              <button class="shutter" id="shutter" type="button" aria-label="Scatta una foto di prova"></button>
+              <span class="gal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg>importa</span>
+            </div>
+            <i class="flash" id="flash"></i>
+          </div>
+        </div>
+      </div>
+      <p class="hint">tocca un filtro,<br>poi il pulsante rosso ↑</p>
+    </div>
+  </div>
+</header>
+
+<div class="tape" aria-hidden="true"><div id="tape"></div></div>
+
+<section class="sheet">
+  <div class="wrap">
+    <p class="eyebrow">Per chi è</p>
+    <h2>Che tu sappia cos'è un diaframma, oppure no.</h2>
+    <div class="two">
+      <article class="who rv">
+        <p class="eyebrow">Lo sai</p>
+        <h3>Ti piace fotografare, ma col telefono non ti diverti.</h3>
+        <p>Paclick ti toglie il lavoro sul file e ti lascia quello che conta: guardare e scegliere.</p>
+        <ul>
+          <li>Sette filtri pensati come pellicole, ognuno con la sua luce.</li>
+          <li>Focali a passi, come con gli obiettivi fissi.</li>
+          <li>Griglie, livella e dati di scatto sul bordo della stampa.</li>
+          <li>Una galleria in cui ogni foto dice dove e quando.</li>
+        </ul>
+      </article>
+      <article class="who rv">
+        <p class="eyebrow">Non lo sai, e va benissimo</p>
+        <h3>Vuoi belle foto senza studiare.</h3>
+        <p>Il filtro ha il nome del momento in cui usarlo. Scegli quello giusto e hai finito.</p>
+        <ul>
+          <li>È mattina? <b>matina</b>. C'è il sole pieno? <b>mezdì</b>.</li>
+          <li>Fai un ritratto? <b>varda chì</b>. Sei fuori la sera? <b>lampion</b>.</li>
+          <li>Nessun menu da capire: un filtro, un pulsante.</li>
+          <li>La cornice fa sembrare ogni foto un ricordo da tenere.</li>
+        </ul>
+      </article>
+    </div>
+
+    <h2 class="frames-title rv">Sei modi di firmare la foto.</h2>
+    <div class="frames rv">
+      <figure><div class="mini"><div class="ph js-scene"></div><p>Casaleone · 14 Novembre 2026</p></div>
+        <figcaption><b>Instant</b>Luogo e data scritti a mano.</figcaption></figure>
+      <figure><div class="mini simple"><div class="ph js-scene"></div><p>Casaleone · 14 Novembre 2026</p></div>
+        <figcaption><b>Semplice</b>Testo battuto a macchina.</figcaption></figure>
+      <figure><div class="mini black"><div class="ph js-scene"></div><p>Casaleone · 14 Novembre 2026</p></div>
+        <figcaption><b>Nera</b>La semplice in negativo, con un filo bianco.</figcaption></figure>
+      <figure><div class="mini strip"><div class="ph js-scene"></div><p>CASALEONE · 14.11.26 · 23</p></div>
+        <figcaption><b>Pellicola</b>Una striscia di negativo con le perforazioni.</figcaption></figure>
+      <figure><div class="mini imprint"><div class="ph js-scene"></div></div>
+        <figcaption><b>Impresse</b>Nessun bordo, le scritte sulla foto.</figcaption></figure>
+      <figure><div class="mini none"><div class="ph js-scene"></div></div>
+        <figcaption><b>Nessuna</b>Il datario arancione delle compatte anni '90.</figcaption></figure>
+    </div>
+
+    <div class="facts">
+      <div class="rv"><h3>Pronte per i social</h3><p>1:1, 4:5 e 2:3. Le stampe verticali arrivano al 4:5 con un po' di carta in più ai lati: su Instagram e Facebook si vedono intere, cornice compresa.</p></div>
+      <div class="rv"><h3>Un titolo, a voce</h3><p>Appena scattato, di' il titolo o scrivilo: va sulla stampa, nella riga grande.</p></div>
+      <div class="rv"><h3>Le ristampe</h3><p>Ogni scatto tiene il suo negativo per 60 giorni: rifai la stampa con un'altra cornice o un altro formato.</p></div>
+      <div class="rv"><h3>Anche le foto vecchie</h3><p>Con «importa» dai lo stesso trattamento a foto già scattate, fino a 20 alla volta, con un titolo per ciascuna. Luogo e data arrivano dalla foto originale.</p></div>
+      <div class="rv"><h3>Solo l'inquadratura</h3><p>Tieni premuto il mirino: resta l'immagine, grande, e il nome del filtro. Il tasto del volume scatta.</p></div>
+      <div class="rv"><h3>Tocca e metti a fuoco</h3><p>Un tocco sul mirino mette a fuoco ed espone lì. Griglie dei terzi, spirale aurea e livella.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="dark">
+  <div class="film" aria-hidden="true"><div id="film"></div></div>
+  <div class="wrap">
+    <p class="eyebrow">Modalità analogica</p>
+    <h2>Il rullino: <span>12, 24 o 36</span> pose. Poi basta.</h2>
+    <p class="sub">Il telefono ci ha regalato scatti infiniti, e l'abitudine di farne dieci uguali. Con il rullino il mirino diventa piccolo e quasi in bianco e nero, le foto non si rivedono e non si cancellano. Scegli una focale, o un corredo di due, come con gli obiettivi fissi. Quando finisci le foto vanno allo sviluppo: subito, dopo un'ora o domattina alle 8.</p>
+    <div class="three">
+      <div class="rv"><h3>Il limite</h3><p>Sai in partenza quante pose hai. Meno sono, più attenzione dai a ciascuna.</p></div>
+      <div class="rv"><h3>La scelta</h3><p>Ti fermi un attimo prima di premere. Oppure tocchi «sorprendimi» e il filtro lo sceglie Paclick guardando la luce e la scena.</p></div>
+      <div class="rv"><h3>La sorpresa</h3><p>Una notifica ti avvisa che le foto sono pronte. Aprirle è come ritirare le buste dal fotografo.</p></div>
+    </div>
+    <div class="fridge rv">
+      <div class="cans" role="img" aria-label="Il frigo: tre rullini pronti, due posti liberi">
+        <span class="can" style="--c:#E9C46A"></span><span class="can" style="--c:#BFD9DE"></span><span class="can" style="--c:#E0452B"></span>
+        <span class="can empty"></span><span class="can empty"></span>
+      </div>
+      <p>Nel frigo trovi 3 rullini. Ne arriva uno nuovo ogni giorno, fino a 5: se li finisci, aspetti.</p>
+    </div>
+  </div>
+</section>
+
+<section class="get" id="scarica">
+  <div class="wrap">
+    <p class="eyebrow">Gratis · solo Android</p>
+    <h2>Mettila sul telefono in un minuto.</h2>
+    <ol class="steps">
+      <li class="rv"><b>Scarica il file</b>Tocca il pulsante qui sotto dal tuo telefono Android.</li>
+      <li class="rv"><b>Installa</b>Apri il file scaricato. La prima volta Android chiede il permesso di installare app da questa fonte: consentilo.</li>
+      <li class="rv"><b>Click</b>Apri Paclick, scegli un filtro e scatta. Gli aggiornamenti si installano sopra, senza perdere niente.</li>
+    </ol>
+    <div class="cta-row">
+      <a class="btn js-dl" href="https://github.com/PietroPaci/paclick-download/releases/latest">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Scarica Paclick<small class="js-ver">APK per Android</small></span>
+      </a>
+      <p class="count js-count" hidden>già scaricata <span class="odo js-odo" aria-hidden="true"></span><span class="js-odo-sr" style="position:absolute;left:-9999px"></span> volte</p>
+    </div>
+    <p class="note">Paclick non è sul Play Store, per questo si installa dal file. Si aggiorna da sola: quando c'è una versione nuova te lo dice.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Paclick · fatta a Mantova</span>
+    <span>I nomi dei filtri sono in dialetto mantovano. La traduzione è tra parentesi.</span>
+  </div>
+</footer>
+
+<script>
+/* repo: il repository GitHub pubblico con gli APK (cartella apk) e latest.json.
+   Il pulsante prende da latest.json l'ultima versione, la stessa che vede l'app. */
+var CONFIG = { repo: "PietroPaci/paclick-download" };
+
+/* Le foto stanno nella cartella «foto» accanto a index.html, una per filtro (solo la foto, senza cornice):
+   per cambiarne una basta sostituire il file con lo stesso nome. La scena disegnata resta come riserva.
+   lago.jpg, bar.jpg e gazebo.jpg scorrono solo nella pellicola. */
+var FILTERS = [
+  {id:"matina", name:"matina", tr:"mattina", bg:"#BFD9DE", ink:"#241A15", place:"Castel d'Ario · 13 Novembre 2026", use:"luce chiara o velata",
+   scene:"radial-gradient(circle at 68% 56%,#fffdf2 0 5%,rgba(255,253,242,.5) 6% 12%,transparent 22%),linear-gradient(#c9dfe6 0%,#e6ecdf 58%,#9db39a 58%,#7f9a86 100%)"},
+  {id:"mezdi", name:"mezdì", tr:"mezzogiorno", bg:"#E9C46A", ink:"#241A15", place:"Casaleone · 14 Novembre 2026", use:"sole pieno",
+   scene:"radial-gradient(circle at 74% 18%,#fff7c2 0 6%,rgba(255,247,194,.35) 7% 13%,transparent 14%),linear-gradient(#58a8d8 0%,#a6d4e8 52%,#e2b93b 52%,#c99a1e 72%,#5f9a3a 72%,#3f7d2c 100%)"},
+  {id:"alvol", name:"al vòl", tr:"al volo", bg:"#B8B3A6", ink:"#241A15", place:"Bigarello · 13 Novembre 2026", use:"in giro per strada",
+   scene:"linear-gradient(90deg,#1b1b1b 0 20%,transparent 20% 33%,#2c2b29 33% 55%,transparent 55% 68%,#141414 68% 100%) 0 0/100% 70% no-repeat,linear-gradient(#c4c1b8 0 70%,#55524c 70% 100%)"},
+  {id:"navolta", name:"'navolta", tr:"di una volta", bg:"#F0E4CC", ink:"#241A15", place:"Cerea · 14 Novembre 2026", use:"interni e ricordi",
+   scene:"radial-gradient(ellipse at 36% 38%,#f6c670 0 7%,rgba(214,130,50,.75) 20%,transparent 56%),linear-gradient(#5a3420,#2e1a12)"},
+  {id:"vardachi", name:"varda chì", tr:"guarda qui", bg:"#E6B5A3", ink:"#241A15", place:"Casaleone · 14 Novembre 2026", use:"ritratti",
+   scene:"radial-gradient(circle at 50% 40%,#edc4ab 0 17%,transparent 17.6%),radial-gradient(ellipse at 50% 104%,#7b4b3c 0 40%,transparent 40.6%),linear-gradient(#aeb7a7,#8b9686)"},
+  {id:"lampion", name:"lampion", tr:"lampione", bg:"#2C4270", ink:"#F6EEDC", place:"Bigarello · 13 Novembre 2026", use:"ora blu e sera",
+   scene:"radial-gradient(circle at 30% 30%,#fff0bd 0 3%,rgba(255,150,60,.8) 6%,rgba(220,50,40,.45) 12%,transparent 24%),linear-gradient(90deg,transparent 0 29%,#0b1120 29% 31%,transparent 31%) 0 100%/100% 70% no-repeat,linear-gradient(#1f3566 0%,#40548c 58%,#101a30 58%,#0a1020 100%)"},
+  {id:"paparazzi", name:"paparazzi", tr:"", bg:"#14100D", ink:"#F6EEDC", place:"Casaleone · 14 Novembre 2026", use:"di notte, col flash",
+   scene:"radial-gradient(circle at 50% 40%,#f6e9de 0 15%,transparent 15.6%),radial-gradient(ellipse at 50% 104%,#ddd5ce 0 38%,transparent 38.6%),radial-gradient(circle at 50% 44%,#4d4239 0,#0b0908 62%)"}
+];
+
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var root = document.documentElement, stage = $("stage"), scale = $("scale"), needle = $("needle"),
+      vf = $("vf"), lamp = $("lamp"), shutter = $("shutter"), n = FILTERS.length, btns = [], current = 1;
+  var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function bgOf(f){ return "url(foto/" + f.id + ".jpg) center/cover no-repeat," + f.scene; }
+  function retrigger(el,cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+  /* scala parlante */
+  FILTERS.forEach(function(f,i){
+    var x = (8 + i*84/(n-1)) + "%", t = document.createElement("span");
+    t.className = "tick" + (i%2 ? " low" : ""); t.style.left = x; scale.appendChild(t);
+    var b = document.createElement("button");
+    b.type = "button"; b.textContent = f.name; b.setAttribute("role","radio"); b.style.left = x;
+    if(i%2) b.className = "low";
+    if(i===n-1){ b.style.left = "auto"; b.style.right = "0"; b.style.transform = "none"; }
+    b.addEventListener("click", function(){ userTook(); pick(i,true); });
+    scale.appendChild(b); btns.push(b);
+  });
+  scale.addEventListener("keydown", function(e){
+    var d = e.key==="ArrowRight"?1 : e.key==="ArrowLeft"?-1 : 0;
+    if(!d) return; e.preventDefault(); userTook();
+    var next = (current + d + n) % n; pick(next,true); btns[next].focus();
+  });
+
+  function pick(i,animate){
+    var f = FILTERS[i]; current = i;
+    root.style.setProperty("--bg", f.bg); root.style.setProperty("--ink", f.ink);
+    btns.forEach(function(b,k){ b.setAttribute("aria-checked", k===i?"true":"false"); b.tabIndex = k===i?0:-1; });
+    needle.style.left = lamp.style.left = (8 + i*84/(n-1)) + "%";
+    vf.style.backgroundImage = "url(foto/" + f.id + ".jpg)," + f.scene.replace(/ 0 (0|100%)\/100% \d+% no-repeat/g,"");
+    $("tag").innerHTML = "<b>" + f.name + "</b>" + (f.tr ? " (" + f.tr + ")" : "") + " · " + f.use;
+    if(animate && !calm) retrigger($("dark"),"on");
+  }
+
+  /* le stampe escono dall'alto del telefono e si posano intorno */
+  var slots = [[-1,-.04,-11],[1,-.1,9],[-1,.31,7],[1,.28,-8]], inSlot = [], turn = 0;
+  function makePrint(f){
+    var p = document.createElement("div"); p.className = "print";
+    var cap = f.place.split(" · ");
+    p.innerHTML = '<div class="ph"></div><p>' + cap[0] + "<span>" + cap[1] + "</span></p>";
+    p.firstChild.style.background = bgOf(f);
+    return p;
+  }
+  function restOf(k,p){
+    var ph = stage.querySelector(".phone"), W = ph.offsetWidth, H = ph.offsetHeight, pw = p.offsetWidth || 112;
+    var dx = Math.min(W/2 + pw/2 - 30, stage.offsetWidth/2 - pw*.1) * slots[k][0];
+    return "translate(calc(-50% + " + dx.toFixed(0) + "px)," + (H*slots[k][1]).toFixed(0) + "px) rotate(" + slots[k][2] + "deg)";
+  }
+  function place(f,k,animate){
+    var p = makePrint(f), old = inSlot[k];
+    stage.appendChild(p);
+    var end = restOf(k,p);
+    if(!animate || !p.animate){ p.style.transform = end; p.style.zIndex = 3; if(old) old.remove(); inSlot[k] = p; return; }
+    p.classList.add("raw");
+    var a = p.animate([
+      {transform:"translate(-50%,30px) rotate(0deg)", offset:0},
+      {transform:"translate(-50%,-92px) rotate(-2deg)", offset:.38, easing:"cubic-bezier(.3,1.3,.5,1)"},
+      {transform:"translate(-50%,-92px) rotate(-2deg)", offset:.5},
+      {transform:end, offset:1}
+    ],{duration:1700, easing:"ease-out", fill:"forwards"});
+    setTimeout(function(){ p.style.zIndex = 3; }, 800);
+    a.onfinish = function(){ p.style.transform = end; a.cancel(); p.classList.remove("raw"); if(old) old.remove(); };
+    inSlot[k] = p;
+  }
+  function shoot(byUser){
+    var f = FILTERS[current];
+    retrigger($("flash"),"on"); retrigger($("dark"),"on");
+    shutter.classList.add("down"); setTimeout(function(){ shutter.classList.remove("down"); },160);
+    place(f, turn % slots.length, !calm); turn++;
+    if(byUser) clickSound();
+  }
+  var ac;
+  function clickSound(){
+    try{
+      var C = window.AudioContext || window.webkitAudioContext; if(!C) return; ac = ac || new C();
+      var t = ac.currentTime;
+      [0,.07].forEach(function(d,k){
+        var o = ac.createOscillator(), g = ac.createGain(); o.type = "square";
+        o.frequency.setValueAtTime(k?900:1800, t+d); g.gain.setValueAtTime(.1, t+d);
+        g.gain.exponentialRampToValueAtTime(.001, t+d+.04); o.connect(g); g.connect(ac.destination);
+        o.start(t+d); o.stop(t+d+.05);
+      });
+    }catch(e){}
+  }
+  shutter.addEventListener("click", function(){ userTook(); shoot(true); });
+
+  /* stato di partenza: due stampe già posate, poi la dimostrazione automatica finché non tocchi tu */
+  pick(current,false);
+  place(FILTERS[3],2,false); place(FILTERS[0],1,false); turn = 3;
+  var auto = null, seen = true;
+  function userTook(){ if(auto){ clearInterval(auto); auto = null; } }
+  if(!calm){
+    auto = setInterval(function(){
+      if(!seen || document.hidden) return;
+      pick((current+1) % n, true); setTimeout(function(){ if(auto) shoot(false); }, 800);
+    }, 3600);
+    if("IntersectionObserver" in window){
+      new IntersectionObserver(function(e){ seen = e[0].isIntersecting; },{threshold:.25}).observe(stage);
+    }
+  }
+  window.addEventListener("resize", function(){ inSlot.forEach(function(p,k){ if(p && p.isConnected) p.style.transform = restOf(k,p); }); });
+
+  /* nastro, pellicola, cornici */
+  var names = FILTERS.map(function(f){ return "<span>" + f.name + "</span>"; }).join("");
+  $("tape").innerHTML = names + names + names + names;
+  var fr = ["matina","bar","vardachi","lago","alvol","mezdi","gazebo","paparazzi","navolta","lampion"].map(function(id){ return '<i style="background:#3a302a url(foto/' + id + '.jpg) center/cover"></i>'; }).join("");
+  $("film").innerHTML = fr + fr;
+  document.querySelectorAll(".js-scene").forEach(function(el){ el.style.background = bgOf(FILTERS[1]); });
+
+  /* entrata allo scorrimento */
+  if(!calm && "IntersectionObserver" in window){
+    root.classList.add("js-rv");
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }); },{threshold:.15});
+    document.querySelectorAll(".rv").forEach(function(el){ io.observe(el); });
+  }
+
+  /* ---- ultima versione: lo stesso latest.json che legge l'app ---- */
+  fetch("https://raw.githubusercontent.com/" + CONFIG.repo + "/main/latest.json", {cache:"no-store"})
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(v){
+      if(!v || !v.apk) return;
+      document.querySelectorAll(".js-dl").forEach(function(a){ a.href = v.apk; });
+      document.querySelectorAll(".js-ver").forEach(function(el){ el.textContent = "versione " + v.version + " · APK per Android"; });
+    })
+    .catch(function(){ /* resta il collegamento scritto nella pagina */ });
+
+  /* ---- contatore: somma degli scaricamenti degli APK allegati alle release di GitHub ----
+     (dalla 1.0.1 ogni versione è anche una release; i download dalla cartella apk non si contano) */
+  function showCount(total){
+    var t = String(total); while(t.length < 4) t = "0" + t;
+    var html = t.split("").map(function(c){ return "<b>" + c + "</b>"; }).join("");
+    document.querySelectorAll(".js-odo").forEach(function(el){ el.innerHTML = html; });
+    document.querySelectorAll(".js-odo-sr").forEach(function(el){ el.textContent = total; });
+    document.querySelectorAll(".js-count").forEach(function(el){ el.hidden = false; });
+  }
+  fetch("https://api.github.com/repos/" + CONFIG.repo + "/releases?per_page=100")
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(rels){
+      var total = 0;
+      rels.forEach(function(r){ if(!r.draft) (r.assets||[]).forEach(function(a){ if(/\.apk$/i.test(a.name)) total += a.download_count; }); });
+      if(total > 0) showCount(total);
+    })
+    .catch(function(){ /* senza dati il contatore resta nascosto: nessun numero inventato */ });
+})();
+</script>
+</body>
+</html>
