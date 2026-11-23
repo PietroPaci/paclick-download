@@ -1,6 +1,6 @@
 {
- "version": "0.8.9.3",
- "notes": "• cornice pellicola rifatta: perforazioni più grandi e sempre in orizzontale; con la foto verticale diventa un mezzo formato, come sulle vecchie compatte half-frame\n• 'navolta e mezdì: i cieli bianchi o coperti non ingialliscono più\n• al vòl: il cielo azzurro resta azzurro invece di virare al verde acqua\n• varda chì: all'ora blu il cielo e la striscia rosa del tramonto restano vivi\n• paparazzi: la luce al centro solo quando il flash scatta davvero",
- "apk": "https://raw.githubusercontent.com/PietroPaci/paclick-download/main/apk/Paclick-0.8.9.3.apk",
+ "version": "1.0.1",
+ "notes": "• stampe pronte per i social: in verticale arrivano al 4:5 e Instagram e Facebook non tagliano più la cornice\n• il titolo si chiede subito dopo lo scatto; nell'importazione titolo foto per foto, e il luogo per le foto che non lo hanno\n• ristampe: rifai la stampa degli ultimi scatti con un'altra cornice o un altro formato\n• rullino con due ottiche, da scambiare toccando la focale\n• tocca il mirino per mettere a fuoco; tieni premuto per la modalità minimale (volume su scatta)\n• mirino più fluido e definito; sui telefoni lenti si alleggerisce da solo\n• cornice nera rifatta, pellicola verticale come l'orizzontale, sfondo nel colore del filtro, spirale aurea\n• se l'app si chiude all'improvviso puoi mandare il rapporto con WhatsApp o mail\n• guida riscritta; in inglese sui telefoni in inglese",
+ "apk": "https://raw.githubusercontent.com/PietroPaci/paclick-download/main/apk/Paclick-1.0.1.apk",
  "page": "https://github.com/PietroPaci/paclick-download"
 }

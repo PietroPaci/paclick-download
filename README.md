@@ -8,6 +8,6 @@ Paclick controlla da solo, una volta al giorno, se qui c'è una versione nuova e
 
 ## Versione attuale
 
-**0.8.9.1** (prova della 0.9) — [scarica](https://raw.githubusercontent.com/PietroPaci/paclick-download/main/apk/Paclick-0.8.9.1.apk)
+**1.0.1** — [scarica](https://raw.githubusercontent.com/PietroPaci/paclick-download/main/apk/Paclick-1.0.1.apk)
 
 `latest.json` dice all'app qual è l'ultima versione.
