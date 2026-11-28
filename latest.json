@@ -1,6 +1,6 @@
 {
- "version": "1.2",
- "notes": "• importa: ogni foto tiene la sua pellicola; quella che scegli vale anche per le foto successive non ancora toccate, e sopra il titolo vedi quante foto hanno ciascuna pellicola\n• importa: il provino, le foto a strisce di pellicola (un file per striscia, pronto da stampare), ognuna col suo filtro\n• la ghiera del mirino veste la cornice scelta: crema per l'istantanea, bianco per la semplice, nero per la nera, perforazioni per la pellicola; con datario e impresse vedi la data e le scritte dal vivo, dove saranno nella stampa\n• impostazioni › informazioni: «verifica aggiornamenti», e il controllo automatico ogni 6 ore\n• il titolo a voce nell'importazione funziona come allo scatto\n• ottimizzazione dell'app",
- "apk": "https://github.com/PietroPaci/paclick-download/releases/download/v1.2/Paclick-1.2.apk",
+ "version": "1.3",
+ "notes": "• impostazioni a voci: Cornice e formato, La curnìs mia, Scritte, Luogo, Rullino, Ristampe, Guida, Informazioni, ognuna con una riga che dice com'è impostata; la targhetta sotto il mirino apre Cornice e formato\n• la curnìs mia: la tua cornice, da comporre scegliendo spessore, sfondo, scritte, carattere, filo sul bordo e trama, con cinque combinazioni da cui partire\n• provino rifatto: le stampe con cornice pellicola, ridotte e unite in fila; quando la fila è troppo lunga continua in un altro file\n• rullino: chi sceglie lo sviluppo dopo un'ora o la mattina dopo riceve anche il provino del rullino\n• importa: il luogo si può dettare, e quello dato a una foto vale anche per le successive senza luogo\n• Scritte ha l'anteprima della stampa, come Cornice e formato",
+ "apk": "https://github.com/PietroPaci/paclick-download/releases/download/v1.3/Paclick-1.3.apk",
  "page": "https://pietropaci.github.io/paclick-download/"
 }
